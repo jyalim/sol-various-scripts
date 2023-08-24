@@ -20,7 +20,8 @@ short descriptions.
 This is a wrapper around `salloc`, that connects the calling user to
 Sol's oversubscribed and highly-available 'lightwork' partition. This is
 especially useful for students that are first learning how to use the
-supercomputer. The script allows X11 forwarding.
+supercomputer. The connection script allows X11 forwarding, and will
+accept typical `salloc` flags that will override its default behavior.
 
 <div float="center">
  <p align="center"> 
