@@ -127,5 +127,5 @@ as well. This script is called when users log in.
 
 
 
-[mkjupy]: https://links.asu.edu/mkjupy
+[mkjupy]: https://asurc.atlassian.net/wiki/spaces/RC/pages/1695285256/Jupyter+kernels+on+Sol
 [sol-repo]: https://github.com/asu-ke/sol
