@@ -1,0 +1,48 @@
+#!/bin/bash
+# BLAME : Jason <yalim@asu.edu>
+
+usage() {
+  cat << __EOF
+[1;31m
+mkjupy <my_conda_env_name> [kernel_display_name]
+
+For more see: links.asu.edu/mkjupy
+[0m
+__EOF
+}
+
+ERROR="__ERROR__"
+
+env_name="${1:-$ERROR}"
+dsp_name="${2:-${env_name}}"
+
+if [[ "$env_name" == "$ERROR" ]]; then
+  echo "ERROR: local mamba environment must be passed!"
+  usage
+  exit 1
+fi
+
+trap usage ERR
+
+### RESET ENV #################################################################
+# Check to see if an environment is already activated, if so deactivate
+(( ${CONDA_SHLVL:-0} > 0 )) && source deactivate &>/dev/null || :
+# Purge all modules 
+module purge
+module load mamba/latest &> /dev/null
+### Install jupyter dependency, ipykernel, if necessary #######################
+conda run -n "$env_name"  python -c "import ipykernel" 2> /dev/null \
+  && {
+    echo "[1;32mInstalled package found: ipykernel[0m"
+  } || {
+    echo "[1;34mInstalling required package: ipykernel -- please be patient[0m"
+    conda run -n "$env_name" pip install ipykernel
+}
+### Create the kernel file by calling ipykernel ###############################
+conda run -n "$env_name" python -m ipykernel install --user --name="$dsp_name"
+cat << EOF
+[1;32m
+Installation complete. 
+Env: "$env_name" should now be available in Jupyter as a kernel.
+[0m
+EOF

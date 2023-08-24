@@ -1,0 +1,29 @@
+#!/bin/bash
+# 2023 Jason <yalim@asu.edu>
+#
+# This will allocate compute node resources.
+# Then ssh to connect to the first node with trusted X11 forwarding.
+#
+##
+
+readonly opts=(
+  --no-shell
+  -p lightwork
+  -q public
+  -N 1-1
+  -c 1
+  -t 0-1
+  $@ 
+)
+
+
+# Submit the job and get nodelist
+readonly nodelist=$(
+  salloc "${opts[@]}" 2>&1 \
+    | tee /dev/stderr      \
+    | awk '/Nodes *.* are ready for job/ {print $3}'
+)
+# get first node in nodelist
+readonly node=$(scontrol show hostnames $nodelist)
+# connect to node with X11 forwarding enabled
+ssh -Y $node
