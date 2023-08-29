@@ -22,6 +22,8 @@ Sol's oversubscribed and highly-available 'lightwork' partition. This is
 especially useful for students that are first learning how to use the
 supercomputer. The connection script allows X11 forwarding, and will
 accept typical `salloc` flags that will override its default behavior.
+Once the `ssh` session is closed (or if the script encounters errors),
+the script will cancel the allocated job.
 
 <div float="center">
  <p align="center"> 

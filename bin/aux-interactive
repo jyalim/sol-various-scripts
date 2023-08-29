@@ -2,9 +2,15 @@
 # 2023 Jason <yalim@asu.edu>
 #
 # This will allocate compute node resources.
-# Then ssh to connect to the first node with trusted X11 forwarding.
+# Then ssh is used to connect to the node.
 #
 ##
+set -euo pipefail
+
+close_allocation() {
+  local job_id="$1"
+  scancel $job_id
+}
 
 readonly opts=(
   --no-shell
@@ -15,15 +21,23 @@ readonly opts=(
   -t 0-1
   $@ 
 )
-
-
 # Submit the job and get nodelist
-readonly nodelist=$(
+mapfile -t jobid_nodelist < <( 
   salloc "${opts[@]}" 2>&1 \
     | tee /dev/stderr      \
-    | awk '/Nodes *.* are ready for job/ {print $3}'
+    | awk '
+      /Granted job allocation *.*/ {print $NF} 
+      /Nodes *.* are ready for job/ {print $3}
+    '
 )
+
+readonly jobid=${jobid_nodelist[0]}
+readonly nodelist=${jobid_nodelist[-1]}
+
+trap "close_allocation $jobid" 0 1 2 3 4 5 6 7 9
+
 # get first node in nodelist
 readonly node=$(scontrol show hostnames $nodelist)
 # connect to node with X11 forwarding enabled
 ssh -Y $node
+set -x
