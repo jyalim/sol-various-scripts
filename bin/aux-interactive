@@ -21,7 +21,7 @@ readonly opts=(
   -t 0-1
   $@ 
 )
-# Submit the job and get nodelist
+# Submit the job, get job id and nodelist
 mapfile -t jobid_nodelist < <( 
   salloc "${opts[@]}" 2>&1 \
     | tee /dev/stderr      \
@@ -30,6 +30,11 @@ mapfile -t jobid_nodelist < <(
       /Nodes *.* are ready for job/ {print $3}
     '
 )
+# If the array is empty, catch it and exit
+if (( ${#jobid_nodelist[@]} == 0)); then
+  printf 'Errors encountered\n'
+  exit 1
+fi
 
 readonly jobid=${jobid_nodelist[0]}
 readonly nodelist=${jobid_nodelist[-1]}
@@ -37,7 +42,7 @@ readonly nodelist=${jobid_nodelist[-1]}
 trap "close_allocation $jobid" 0 1 2 3 4 5 6 7 9
 
 # get first node in nodelist
-readonly node=$(scontrol show hostnames $nodelist)
+readonly node=$(scontrol show hostnames $nodelist | head -n 1)
 # connect to node with X11 forwarding enabled
 ssh -Y $node
 set -x
